@@ -41,7 +41,7 @@ cat > ~/.docker/config.json <<EOF
     "default": {
       "httpProxy": "http://WINDOWS_IP:PROXY_PORT",
       "httpsProxy": "http://WINDOWS_IP:PROXY_PORT",
-      "noProxy": "localhost,127.0.0.1,docker.io"
+      "noProxy": "localhost,127.0.0.1"
     }
   }
 }
@@ -57,7 +57,7 @@ cat > ~/.docker/config.json <<EOF
     "default": {
       "httpProxy": "http://172.19.32.1:7890",
       "httpsProxy": "http://172.19.32.1:7890",
-      "noProxy": "localhost,127.0.0.1,docker.io"
+      "noProxy": "localhost,127.0.0.1"
     }
   }
 }
@@ -90,25 +90,59 @@ cat ~/.docker/config.json
 docker pull gcr.io/kaggle-gpu-images/python:latest
 ```
 
-## 方法 2：通过 Docker Desktop 设置界面配置
+## 方法 2：通过 Docker Desktop 设置界面配置（推荐，用于 docker pull）
 
-Docker Desktop 也提供了图形界面来配置代理：
+**重要**：`~/.docker/config.json` 中的代理配置主要用于容器内的代理环境变量，而 `docker pull` 等操作需要使用 Docker Desktop 的 GUI 配置。
+
+### 配置步骤
 
 1. **打开 Docker Desktop**
+   - 确保 Docker Desktop 正在运行
+
 2. **进入设置**：
-   - 点击右上角的设置图标（齿轮图标）
-   - 或者点击系统托盘图标 -> Settings
+   - 点击右上角的设置图标（齿轮图标 ⚙️）
+   - 或者右键点击系统托盘中的 Docker 图标 -> Settings
 
 3. **找到代理设置**：
-   - 在左侧菜单中找到 "Resources" -> "Proxies"
-   - 或者搜索 "Proxy"
+   - 在左侧菜单中找到 **"Resources"** -> **"Proxies"**
+   - 或者直接在设置中搜索 "Proxy"
 
 4. **配置代理**：
-   - 启用 "Manual proxy configuration"
-   - 输入代理地址：`http://172.19.32.1:7890`（根据你的实际 IP 和端口）
-   - 应用设置
+   - 启用 **"Manual proxy configuration"**
+   - 在 **"Web Server (HTTP)"** 中输入：`http://172.19.32.1:7890`
+   - 在 **"Secure Web Server (HTTPS)"** 中输入：`http://172.19.32.1:7890`
+     - 注意：根据您的实际 Windows IP 和代理端口调整
+     - 在 WSL 中运行 `ip route show | grep default | awk '{print $3}'` 获取 Windows IP
+   - 在 **"Bypass for"** 中输入：`localhost,127.0.0.1`
+     - **重要**：不要在这里添加 `docker.io`，否则 Docker Hub 无法通过代理访问
 
-5. **重启 Docker Desktop**
+5. **应用设置**：
+   - 点击 **"Apply & Restart"** 按钮
+   - Docker Desktop 会自动重启以应用新配置
+
+6. **验证配置**：
+   ```bash
+   # 检查 Docker 代理配置
+   docker info | grep -i proxy
+   
+   # 应该显示您配置的代理地址，而不是 http.docker.internal:3128
+   
+   # 测试拉取镜像
+   docker pull pytorch/pytorch:2.2.1-cuda12.1-cudnn8-runtime
+   ```
+
+### 获取 Windows IP 地址
+
+在 WSL 中运行：
+```bash
+ip route show | grep -i default | awk '{ print $3}' | head -1
+```
+
+或者查看当前配置：
+```bash
+# 从现有配置中提取
+grep -oP '"httpProxy":\s*"\K[^"]+' ~/.docker/config.json | cut -d: -f2 | cut -d/ -f3 | cut -d: -f1
+```
 
 ## 常见问题
 

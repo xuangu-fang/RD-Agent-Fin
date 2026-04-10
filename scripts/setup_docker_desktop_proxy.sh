@@ -44,7 +44,7 @@ if [ -f "$DOCKER_CONFIG_FILE" ]; then
     "default": {
       "httpProxy": "$PROXY_URL",
       "httpsProxy": "$PROXY_URL",
-      "noProxy": "localhost,127.0.0.1,docker.io"
+      "noProxy": "localhost,127.0.0.1"
     }
   }
 }
@@ -59,7 +59,7 @@ else
     "default": {
       "httpProxy": "$PROXY_URL",
       "httpsProxy": "$PROXY_URL",
-      "noProxy": "localhost,127.0.0.1,docker.io"
+      "noProxy": "localhost,127.0.0.1"
     }
   }
 }
